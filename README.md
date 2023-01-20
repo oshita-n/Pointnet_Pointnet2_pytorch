@@ -77,12 +77,8 @@ python test_classification.py --log_dir pointnet2_cls_ssg --num_category 10
 | PointNet2_MSG (Pytorch with normal) |  **92.8**|
 
 ## Part Segmentation (ShapeNet)
-### Point Cloud Preprocessing
-Convert point cloud file to x y z r g b format.  
-```
-# put in point cloud file in data directory
-python convert_test_data.py
-```
+### Data Preparation
+Download alignment **ShapeNet** [here](https://shapenet.cs.stanford.edu/media/shapenetcore_partanno_segmentation_benchmark_v0_normal.zip)  and save in `data/shapenetcore_partanno_segmentation_benchmark_v0_normal/`.
 ### Run
 ```
 ## Check model in ./models 
@@ -101,13 +97,17 @@ python test_partseg.py --normal --log_dir pointnet2_part_seg_msg
 
 
 ## Semantic Segmentation (S3DIS)
-### Data Preparation
-Download 3D indoor parsing dataset (**S3DIS**) [here](http://buildingparser.stanford.edu/dataset.html)  and save in `data/s3dis/Stanford3dDataset_v1.2_Aligned_Version/`.
+### Point Cloud Preprocessing
+Convert point cloud file to x y z r g b format.  
+```
+# put in point cloud file in data directory
+python convert_test_data.py
+```
 ```
 cd data_utils
 python collect_indoor3d_data.py
 ```
-Processed data will save in `data/preprocessing/`.
+Processed data will save in `data/stanford_indoor3d/`.
 ### Run
 ```
 ## Check model in ./models 
