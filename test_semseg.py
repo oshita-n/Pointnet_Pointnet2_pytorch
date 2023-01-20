@@ -62,7 +62,7 @@ def main(args):
     '''HYPER PARAMETER'''
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     experiment_dir = 'log/sem_seg/' + args.log_dir
-    visual_dir = experiment_dir + '/visual/custom_data_ricoh/'
+    visual_dir = experiment_dir + '/visual/'
     visual_dir = Path(visual_dir)
     visual_dir.mkdir(exist_ok=True)
 
@@ -82,7 +82,7 @@ def main(args):
     BATCH_SIZE = args.batch_size
     NUM_POINT = args.num_point
 
-    root = 'data/preprocessing'
+    root = 'data/preprocessing/'
 
     TEST_DATASET_WHOLE_SCENE = ScannetDatasetWholeScene(root, split='train', test_area=args.test_area, block_points=NUM_POINT)
     log_string("The number of test data is: %d" % len(TEST_DATASET_WHOLE_SCENE))
@@ -197,6 +197,7 @@ def main(args):
                 if lists[i] != [] and label2class[i] != "board" and label2class[i] != "bookcase" and label2class[i] != "sofa":
                     annotation = {}
                     pred_index_dict[label2class[i]] = lists[i]
+                    annotation["name"] = os.path.splitext(os.path.basename(filename))[0] + ".pcd"
                     annotation["type"] = "segmentation"
                     annotation["value"] = label2class[i]
                     annotation["title"] = label2class[i]
