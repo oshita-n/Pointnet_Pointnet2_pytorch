@@ -11,8 +11,8 @@ for file_name in file_name_list:
     pcd = o3d.io.read_point_cloud(file_name)
     points = np.asanyarray(pcd.points)
     colors = np.array(np.asanyarray(pcd.colors)*255, dtype=np.int64)
-
-    with open(input_dir + os.path.splitext(os.path.basename(file_name))[0] + ".txt", "a") as f:
+    os.makedirs(input_dir + "Annotations/", exist_ok=True)
+    with open(input_dir + "Annotations/" + os.path.splitext(os.path.basename(file_name))[0] + ".txt", "a") as f:
         for i in range(len(points)):
             x = points[i][0]
             y = points[i][1]
