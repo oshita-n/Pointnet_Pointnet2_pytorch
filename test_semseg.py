@@ -14,6 +14,7 @@ import importlib
 from tqdm import tqdm
 import provider
 import numpy as np
+import json
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
@@ -22,6 +23,8 @@ sys.path.append(os.path.join(ROOT_DIR, 'models'))
 classes = ['ceiling', 'floor', 'wall', 'beam', 'column', 'window', 'door', 'table', 'chair', 'sofa', 'bookcase',
            'board', 'clutter']
 class2label = {cls: i for i, cls in enumerate(classes)}
+label2class = {i: cls for i, cls in enumerate(classes)}
+
 seg_classes = class2label
 seg_label_to_cat = {}
 for i, cat in enumerate(seg_classes.keys()):
@@ -59,7 +62,7 @@ def main(args):
     '''HYPER PARAMETER'''
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     experiment_dir = 'log/sem_seg/' + args.log_dir
-    visual_dir = experiment_dir + '/visual/'
+    visual_dir = experiment_dir + '/visual/custom_data_ricoh/'
     visual_dir = Path(visual_dir)
     visual_dir.mkdir(exist_ok=True)
 
@@ -79,9 +82,10 @@ def main(args):
     BATCH_SIZE = args.batch_size
     NUM_POINT = args.num_point
 
-    root = 'data/s3dis/stanford_indoor3d/'
+    # root = 'data/stanford_indoor3d/'
+    root = 'data/custom_data_ricoh/'
 
-    TEST_DATASET_WHOLE_SCENE = ScannetDatasetWholeScene(root, split='test', test_area=args.test_area, block_points=NUM_POINT)
+    TEST_DATASET_WHOLE_SCENE = ScannetDatasetWholeScene(root, split='train', test_area=args.test_area, block_points=NUM_POINT)
     log_string("The number of test data is: %d" % len(TEST_DATASET_WHOLE_SCENE))
 
     '''MODEL LOADING'''
@@ -91,7 +95,6 @@ def main(args):
     checkpoint = torch.load(str(experiment_dir) + '/checkpoints/best_model.pth')
     classifier.load_state_dict(checkpoint['model_state_dict'])
     classifier = classifier.eval()
-
     with torch.no_grad():
         scene_id = TEST_DATASET_WHOLE_SCENE.file_list
         scene_id = [x[:-4] for x in scene_id]
@@ -110,6 +113,7 @@ def main(args):
             total_iou_deno_class_tmp = [0 for _ in range(NUM_CLASSES)]
             if args.visual:
                 fout = open(os.path.join(visual_dir, scene_id[batch_idx] + '_pred.obj'), 'w')
+                fout_json = open(os.path.join(visual_dir, scene_id[batch_idx] + '_pred.json'), 'w')
                 fout_gt = open(os.path.join(visual_dir, scene_id[batch_idx] + '_gt.obj'), 'w')
 
             whole_scene_data = TEST_DATASET_WHOLE_SCENE.scene_points_list[batch_idx]
@@ -163,6 +167,8 @@ def main(args):
             print('----------------------------')
 
             filename = os.path.join(visual_dir, scene_id[batch_idx] + '.txt')
+            lists = [[], [], [], [], [], [], [], [], [], [], [], [], []]
+
             with open(filename, 'w') as pl_save:
                 for i in pred_label:
                     pl_save.write(str(int(i)) + '\n')
@@ -174,6 +180,7 @@ def main(args):
                     fout.write('v %f %f %f %d %d %d\n' % (
                         whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color[0], color[1],
                         color[2]))
+                    lists[pred_label[i]].append(i)
                     fout_gt.write(
                         'v %f %f %f %d %d %d\n' % (
                             whole_scene_data[i, 0], whole_scene_data[i, 1], whole_scene_data[i, 2], color_gt[0],
@@ -181,6 +188,35 @@ def main(args):
             if args.visual:
                 fout.close()
                 fout_gt.close()
+
+            pred_index_dict = {}
+            annotation = {}
+            annos = []
+            input_json = {}
+            for i in range(len(classes)):
+                # リストが空だったら無視
+                if lists[i] != [] and label2class[i] != "board" and label2class[i] != "bookcase" and label2class[i] != "sofa":
+                    annotation = {}
+                    pred_index_dict[label2class[i]] = lists[i]
+                    annotation["type"] = "segmentation"
+                    annotation["value"] = label2class[i]
+                    annotation["title"] = label2class[i]
+                    annotation["points"] = lists[i]
+                    annotation["rotation"] = 0
+                    annotation["keypoints"] = []
+                    annotation["confidenceScore"] = -1
+                    annos.append(annotation)
+            input_json["width"] = 0
+            input_json["height"] = 0
+            input_json["secondsToAnnotate"] = 0
+            input_json["status"] = "registered"
+            input_json["externalStatus"] = "registered"
+            input_json["annotations"] = annos
+
+
+            with open(os.path.join(visual_dir, scene_id[batch_idx]+ "_pred.json"), "w") as f:
+                json.dump([input_json], f, indent=4)
+                
 
         IoU = np.array(total_correct_class) / (np.array(total_iou_deno_class, dtype=np.float) + 1e-6)
         iou_per_class_str = '------- IoU --------\n'
