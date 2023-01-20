@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.append(BASE_DIR)
 
-DATA_PATH = os.path.join(ROOT_DIR, 'data','s3dis', 'Stanford3dDataset_v1.2_Aligned_Version')
+DATA_PATH = os.path.join(ROOT_DIR, 'data')
 g_classes = [x.rstrip() for x in open(os.path.join(BASE_DIR, 'meta/class_names.txt'))]
 g_class2label = {cls: i for i,cls in enumerate(g_classes)}
 g_class2color = {'ceiling':	[0,255,0],
@@ -54,7 +54,7 @@ def collect_point_label(anno_path, out_filename, file_format='txt'):
         points = np.loadtxt(f)
         labels = np.ones((points.shape[0],1)) * g_class2label[cls]
         points_list.append(np.concatenate([points, labels], 1)) # Nx7
-    
+        print(points)
     data_label = np.concatenate(points_list, 0)
     xyz_min = np.amin(data_label, axis=0)[0:3]
     data_label[:, 0:3] -= xyz_min
