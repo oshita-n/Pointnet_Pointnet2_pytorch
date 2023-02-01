@@ -103,6 +103,7 @@ Convert point cloud file to x y z r g b format.
 # put in point cloud file in data directory
 python convert_test_data.py
 ```
+Plese move or delete pcd file in data directory.
 ```
 cd data_utils
 python collect_indoor3d_data.py
