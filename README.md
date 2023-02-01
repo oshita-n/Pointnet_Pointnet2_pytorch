@@ -107,7 +107,7 @@ python convert_test_data.py
 cd data_utils
 python collect_indoor3d_data.py
 ```
-Processed data will save in `data/stanford_indoor3d/`.
+Processed data will save in `data/preprocessing/`.
 ### Run
 ```
 ## Check model in ./models 
