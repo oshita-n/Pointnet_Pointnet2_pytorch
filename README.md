@@ -105,7 +105,6 @@ python convert_test_data.py
 ```
 Plese move or delete pcd file in data directory.
 ```
-cd data_utils
 python data_utils/collect_indoor3d_data.py
 ```
 Processed data will save in `data/preprocessing/`.
