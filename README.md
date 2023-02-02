@@ -114,7 +114,9 @@ Processed data will save in `data/preprocessing/`.
 ## e.g., pointnet2_ssg
 python train_semseg.py --model pointnet2_sem_seg --test_area 5 --log_dir pointnet2_sem_seg
 python test_semseg.py --log_dir pointnet2_sem_seg --test_area 5 --visual
+python convert_obj_txt.py --filename <obj_file_name>
 ```
+
 Visualization results will save in `log/sem_seg/pointnet2_sem_seg/visual/` and you can visualize these .obj file by [MeshLab](http://www.meshlab.net/).
 
 ### Performance
