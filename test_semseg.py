@@ -36,11 +36,11 @@ def parse_args():
     parser = argparse.ArgumentParser('Model')
     parser.add_argument('--batch_size', type=int, default=32, help='batch size in testing [default: 32]')
     parser.add_argument('--gpu', type=str, default='0', help='specify gpu device')
-    parser.add_argument('--num_point', type=int, default=4096, help='point number [default: 4096]')
+    parser.add_argument('--num_point', type=int, default=4092, help='point number [default: 4096]')
     parser.add_argument('--log_dir', type=str, required=True, help='experiment root')
     parser.add_argument('--visual', action='store_true', default=False, help='visualize result [default: False]')
     parser.add_argument('--test_area', type=int, default=5, help='area for testing, option: 1-6 [default: 5]')
-    parser.add_argument('--num_votes', type=int, default=3, help='aggregate segmentation scores with voting [default: 5]')
+    parser.add_argument('--num_votes', type=int, default=5, help='aggregate segmentation scores with voting [default: 5]')
     return parser.parse_args()
 
 
@@ -112,7 +112,6 @@ def main(args):
             total_iou_deno_class_tmp = [0 for _ in range(NUM_CLASSES)]
             if args.visual:
                 fout = open(os.path.join(visual_dir, scene_id[batch_idx] + '_pred.obj'), 'w')
-                fout_json = open(os.path.join(visual_dir, scene_id[batch_idx] + '_pred.json'), 'w')
                 fout_gt = open(os.path.join(visual_dir, scene_id[batch_idx] + '_gt.obj'), 'w')
 
             whole_scene_data = TEST_DATASET_WHOLE_SCENE.scene_points_list[batch_idx]
@@ -197,7 +196,6 @@ def main(args):
                 if lists[i] != [] and label2class[i] != "board" and label2class[i] != "bookcase" and label2class[i] != "sofa":
                     annotation = {}
                     pred_index_dict[label2class[i]] = lists[i]
-                    annotation["name"] = os.path.splitext(os.path.basename(filename))[0] + ".pcd"
                     annotation["type"] = "segmentation"
                     annotation["value"] = label2class[i]
                     annotation["title"] = label2class[i]
@@ -210,12 +208,13 @@ def main(args):
             input_json["height"] = 0
             input_json["secondsToAnnotate"] = 0
             input_json["status"] = "registered"
+            input_json["name"] = os.path.splitext(os.path.basename(filename))[0] + ".pcd"
             input_json["externalStatus"] = "registered"
             input_json["annotations"] = annos
 
 
-            with open(os.path.join(visual_dir, scene_id[batch_idx]+ "_pred.json"), "w") as f:
-                json.dump([input_json], f, indent=4)
+            with open(os.path.join(visual_dir, scene_id[batch_idx]+ ".json"), "w") as f:
+                json.dump(input_json, f, indent=4)
                 
 
         IoU = np.array(total_correct_class) / (np.array(total_iou_deno_class, dtype=np.float) + 1e-6)

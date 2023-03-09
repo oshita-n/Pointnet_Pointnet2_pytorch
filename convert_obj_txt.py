@@ -22,6 +22,6 @@ if __name__ == "__main__":
     path = "log/sem_seg/pointnet2_sem_seg/visual/" + file_name
     lines = delete_v(path)
 
-    with open(os.path.splitext(file_name)[0] + ".txt", "w") as f:
+    with open("log/sem_seg/pointnet2_sem_seg/visual/" + os.path.splitext(file_name)[0] + ".txt", "w") as f:
         for line in lines:
             f.write(line + "\n")
